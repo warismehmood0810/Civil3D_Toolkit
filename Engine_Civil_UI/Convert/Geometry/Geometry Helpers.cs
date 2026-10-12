@@ -78,8 +78,12 @@ namespace BH.UI.Civil.Engine
             double sweep = arc.EndAngle - arc.StartAngle;
             if (sweep < 0) sweep += 2 * Math.PI;
 
-            // bulge = tan(theta/4) where theta is the included angle
-            return Math.Tan(sweep / 4.0);
+            // bulge = tan(theta/4) where theta is the included angle. A BHoM arc runs counter-clockwise about its own
+            // CoordinateSystem.Z, while an AutoCAD bulge is positive for counter-clockwise in plan (WCS Z up) and
+            // negative for clockwise. So the sign follows which way the arc's Z axis points: an arc whose Z points
+            // down is clockwise in plan. Without this every clockwise arc was drawn bowing the wrong way.
+            double sign = arc.CoordinateSystem.Z.Z < 0 ? -1.0 : 1.0;
+            return sign * Math.Tan(sweep / 4.0);
         }
 
         public static void AddSegment(
