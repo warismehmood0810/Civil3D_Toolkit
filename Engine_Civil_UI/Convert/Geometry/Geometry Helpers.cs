@@ -92,6 +92,10 @@ namespace BH.UI.Civil.Engine
             ACG.Point3d end,
             double bulge)
         {
+            // duplicate vertices: a zero-length segment would make the whole curve invalid
+            if (start.DistanceTo(end) < ZeroLength)
+                return;
+
             if (Math.Abs(bulge) < 1e-12)
             {
                 segments.Add(new BHG.Line
@@ -105,6 +109,9 @@ namespace BH.UI.Civil.Engine
                 segments.Add(BulgeToArc(start, end, bulge));
             }
         }
+        // Polyline segments shorter than this (duplicate vertices) are skipped when reading from Civil 3D.
+        private const double ZeroLength = 1e-6;
+
         public static BHG.Arc BulgeToArc(ACG.Point3d start, ACG.Point3d end, double bulge)
         {
             double chord = start.DistanceTo(end);
