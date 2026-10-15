@@ -136,12 +136,14 @@ namespace BH.UI.Civil.Engine
                 perpDir = new ACG.Vector3d(1, 0, 0);
             perpDir = perpDir.GetNormal();
 
-            // **Apothem** (distance from chord midpoint to center), not sagitta
+            // Signed distance from the chord midpoint to the centre, along the left normal: halfChord * (1 - b^2) / (2b).
+            // For an arc of less than 180 degrees (|b| < 1) the centre is on the bulge's side; past 180 degrees (|b| > 1,
+            // e.g. a cul-de-sac loop) it crosses to the other side. Always putting it on the bulge's side mirrored those
+            // arcs, so they no longer met their neighbours and the polyline failed to convert in Grasshopper.
             double halfChord = chord / 2.0;
-            double apothem = System.Math.Sqrt(System.Math.Max(0.0, radius * radius - halfChord * halfChord));
+            double offset = halfChord * (1.0 - bulge * bulge) / (2.0 * bulge);
 
-            // Center: choose side based on bulge sign (CW vs CCW) [2](https://lee-mac.com/bulgeconversion.html)
-            ACG.Point3d center = mid + perpDir * (System.Math.Sign(bulge) * apothem);
+            ACG.Point3d center = mid + perpDir * offset;
 
             // Local axes
             ACG.Vector3d centerToStart = (start - center).GetNormal();
